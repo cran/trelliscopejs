@@ -121,7 +121,21 @@ test_that("examples run without barfing", {
   # qplot(cty, hwy, data = mpg) +
   #   facet_trelliscope(~ class, auto_cog = FALSE)
 
-  p <- qplot(cty, hwy, data = mpg) +
+  # test using date variables
+  x <- factor(LETTERS[1:4])
+  names(x) <- letters[1:4]
+  data_year_date <- data.frame(
+    year = structure(seq(1950, 1989, 1), class = "Date"),
+    var = rep(x, 10), y = seq(1, 200, 5))
+  ggplot(data_year_date, aes(year, y)) + geom_point() +
+    facet_trelliscope(~ var)
+
+  # update variable with cog()
+  mpg2 <- mpg
+  mpg2$class2 <- as.integer(factor(mpg2$class))
+  mpg2$class2 <- cog(mpg2$class2, desc = "custom cognostic label test")
+
+  p <- qplot(cty, hwy, data = mpg2) +
     facet_trelliscope(~ class, self_contained = TRUE)
   print(p)
 

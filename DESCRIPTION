@@ -1,6 +1,6 @@
 Package: trelliscopejs
 Title: Create Interactive Trelliscope Displays
-Version: 0.1.14
+Version: 0.1.18
 Authors@R: c(
       person("Ryan", "Hafen", email = "rhafen@gmail.com", role = c("aut", "cre")),
       person("Barret", "Schloerke", email = "schloerke@gmail.com", role = "aut")
@@ -16,14 +16,14 @@ Imports: dplyr, purrr, tidyr, grid, htmltools, DistributionUtils,
         webshot, autocogs, rlang
 Suggests: rbokeh, plotly, Cairo, testthat, covr, gapminder,
         housingData, packagedocs
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 URL: https://github.com/hafen/trelliscopejs
 BugReports: https://github.com/hafen/trelliscopejs/issues
 VignetteBuilder: packagedocs
 NeedsCompilation: no
-Packaged: 2018-10-02 21:06:14 UTC; hafen
+Packaged: 2019-01-09 02:12:43 UTC; hafen
 Author: Ryan Hafen [aut, cre],
   Barret Schloerke [aut]
 Maintainer: Ryan Hafen <rhafen@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-10-14 15:30:03 UTC
+Date/Publication: 2019-01-09 06:20:03 UTC
