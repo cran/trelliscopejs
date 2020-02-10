@@ -18,6 +18,7 @@ utils::globalVariables(c(".", "ggplotly"))
 #' @param as_plotly should the panels be written as plotly objects?
 #' @param plotly_args optional named list of arguments to send to \code{ggplotly}
 #' @param plotly_cfg optional named list of arguments to send to plotly's \code{config} method
+#' @param split_sig optional string that specifies the "signature" of the data splitting. If not specified, this is calculated as the md5 hash of the sorted unique facet variables. This is used to identify "related displays" - different displays that are based on the same faceting scheme. This parameter should only be specified manually if a display's faceting is mostly similar to another display's.
 #' @param self_contained should the Trelliscope display be a self-contained html document? (see note)
 #' @param thumb should a thumbnail be created?
 #' @param auto_cog should auto cogs be computed (if possible)?
@@ -27,13 +28,14 @@ utils::globalVariables(c(".", "ggplotly"))
 #' @export
 #' @example man-roxygen/ex-facet_trelliscope.R
 #' @importFrom ggplot2 facet_wrap
+#' @importFrom rlang as_name
 facet_trelliscope <- function(
   facets,
   nrow = 1, ncol = 1, scales = "same", name = NULL, group = "common",
   desc = ggplot2::waiver(), md_desc = ggplot2::waiver(), path = NULL,
   height = 500, width = 500,
   state = NULL, jsonp = TRUE, as_plotly = FALSE,
-  plotly_args = NULL, plotly_cfg = NULL,
+  plotly_args = NULL, plotly_cfg = NULL, split_sig = NULL,
   self_contained = FALSE, thumb = TRUE, auto_cog = FALSE,
   split_layout = FALSE, data = ggplot2::waiver()
 ) {
@@ -61,6 +63,7 @@ facet_trelliscope <- function(
     width = width,
     state = state,
     jsonp = jsonp,
+    split_sig = split_sig,
     path = path,
     self_contained = self_contained,
     nrow = nrow,
@@ -79,26 +82,39 @@ facet_trelliscope <- function(
   ret
 }
 
-#' Add method for gg / facet_trelliscope
-#' @param e1 a object with class gg
-#' @param e2 if object is of class 'facet_trelliscope', then 'facet_trelliscope' will be appended to the class of e1
 #' @export
-#' @importFrom ggplot2 %+%
-`+.gg` <- function (e1, e2) {
-  if (inherits(e2, "facet_trelliscope")) {
-
-    # e1 <- e1 %+% (e2$facet_wrap)
-    attr(e1, "trelliscope") <- e2[c("facets", "facet_cols", "name", "group",
+ggplot_add.facet_trelliscope <- function(object, plot, object_name) {
+  attr(plot, "trelliscope") <- object[
+    c("facets", "facet_cols", "name", "group",
       "desc", "md_desc", "height", "width", "state", "jsonp", "self_contained",
       "path", "state", "nrow", "ncol", "scales", "thumb", "as_plotly",
-      "plotly_args", "plotly_cfg", "auto_cog", "split_layout", "data")]
-    class(e1) <- c("facet_trelliscope", class(e1))
-    return(e1)
-    # return(print(e1))
-  }
-
-  e1 %+% e2
+      "split_sig", "plotly_args", "plotly_cfg", "auto_cog", "split_layout",
+      "data")]
+  class(plot) <- c("facet_trelliscope", class(plot))
+  return(plot)
 }
+
+# #' Add method for gg / facet_trelliscope
+# #' @param e1 a object with class gg
+# #' @param e2 if object is of class 'facet_trelliscope', then 'facet_trelliscope' will be appended to the class of e1
+# #' @export
+# #' @importFrom ggplot2 %+%
+# `+.gg` <- function (e1, e2) {
+#   if (inherits(e2, "facet_trelliscope")) {
+
+#     # e1 <- e1 %+% (e2$facet_wrap)
+#     attr(e1, "trelliscope") <- e2[c("facets", "facet_cols", "name", "group",
+#       "desc", "md_desc", "height", "width", "state", "jsonp", "self_contained",
+#       "path", "state", "nrow", "ncol", "scales", "thumb", "as_plotly",
+#       "split_sig", "plotly_args", "plotly_cfg", "auto_cog", "split_layout",
+#       "data")]
+#     class(e1) <- c("facet_trelliscope", class(e1))
+#     return(e1)
+#     # return(print(e1))
+#   }
+
+#   e1 %+% e2
+# }
 
 
 #' Print facet trelliscope object
@@ -149,9 +165,9 @@ print.facet_trelliscope <- function(x, ...) {
       "or in the 'data' parameter")
   }
 
-  # character vect of facet columns
+  # character vector of facet columns
   # TODO need to work with facet_trelliscope(~ disp < 5)
-  facet_cols <- unlist(lapply(attrs$facet_cols, as.character))
+  facet_cols <- unlist(lapply(attrs$facet_cols, rlang::as_name))
   facet_cols <- setdiff(facet_cols, "~")
   if (!all(facet_cols %in% names(data))) {
     stop("all facet_trelliscope facet columns must be found in the ",
@@ -181,7 +197,18 @@ print.facet_trelliscope <- function(x, ...) {
   # wrapper function that swaps out the data with a subset and removes the facet
   make_plot_obj <- function(dt, pos = -1) {
     q <- p
-    q$data <- tidyr::unnest(dt)
+    # dt$data <- lapply(dt$data, function(x) {
+    #   idx <- which(unlist(lapply(x, function(a) inherits(a, "cog"))))
+    #   for (ii in idx) {
+    #     class(x[[ii]]) <- setdiff(class(x[[ii]]), "cog")
+    #   }
+    #   x
+    # })
+    # q$data <- tidyr::unnest(dt, data)
+    nms <- setdiff(names(dt), "data")
+    tmp <- dt$data[[1]]
+    for (nm in nms) tmp[[nm]] <- dt[[nm]]
+    q$data <- tmp[, c(nms, setdiff(names(tmp), nms))]
     q <- add_trelliscope_scales(q, scales_info, show_warnings = (pos == 1))
     q
   }
@@ -224,8 +251,8 @@ print.facet_trelliscope <- function(x, ...) {
     name <- paste("by_", paste(facet_cols, collapse = "_"), sep = "")
 
   params <- resolve_app_params(attrs$path, attrs$self_contained, attrs$jsonp,
-    name, attrs$group, attrs$state, attrs$nrow, attrs$ncol, attrs$thumb,
-    attrs$split_layout)
+    attrs$split_sig, name, attrs$group, attrs$state, attrs$nrow, attrs$ncol,
+    attrs$thumb, attrs$split_layout)
 
   pb <- progress::progress_bar$new(
     format = ":what [:bar] :percent :current/:total eta::eta",
@@ -289,6 +316,7 @@ print.facet_trelliscope <- function(x, ...) {
     split_layout = params$split_layout,
     split_aspect = split_aspect,
     has_legend,
+    split_sig = params$split_sig,
     pb = pb
   )
 
@@ -307,8 +335,8 @@ print.facet_trelliscope <- function(x, ...) {
     spa = params$spa
   )
 
-  # return early for knitr
-  if (params$in_knitr) {
+  # return early for knitr or shiny
+  if (params$in_knitr || params$in_shiny) {
     return(res)
   }
 

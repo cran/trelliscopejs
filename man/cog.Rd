@@ -4,9 +4,17 @@
 \alias{cog}
 \title{Cast Column as a Cognostic}
 \usage{
-cog(val = NULL, desc = "", group = "common", type = NULL,
-  default_label = FALSE, default_active = TRUE, filterable = TRUE,
-  sortable = TRUE, log = NULL)
+cog(
+  val = NULL,
+  desc = "",
+  group = "common",
+  type = NULL,
+  default_label = FALSE,
+  default_active = TRUE,
+  filterable = TRUE,
+  sortable = TRUE,
+  log = NULL
+)
 }
 \arguments{
 \item{val}{a scalar value (numeric, character, date, etc.)}
@@ -47,7 +55,7 @@ mpg_cog <- mpg \%>\%
   group_by(manufacturer, class) \%>\%
   nest() \%>\%
   mutate(
-    cogs = map_cog(data, ~ data_frame(
+    cogs = map_cog(data, ~ tibble(
       mean_city_mpg = cog(mean(.$cty), desc = "Mean city mpg"),
       mean_hwy_mpg = cog(mean(.$hwy), desc = "Mean highway mpg"),
       most_common_drv = cog(tail(names(table(.$drv)), 1), desc = "Most common drive type")

@@ -4,10 +4,25 @@
 \alias{trelliscope}
 \title{Create a Trelliscope Display}
 \usage{
-trelliscope(x, name, group = "common", panel_col = NULL, desc = "",
-  md_desc = "", path, height = 500, width = 500, auto_cog = FALSE,
-  state = NULL, nrow = 1, ncol = 1, jsonp = TRUE,
-  self_contained = FALSE, thumb = FALSE)
+trelliscope(
+  x,
+  name,
+  group = "common",
+  panel_col = NULL,
+  desc = "",
+  md_desc = "",
+  path,
+  height = 500,
+  width = 500,
+  auto_cog = FALSE,
+  state = NULL,
+  nrow = 1,
+  ncol = 1,
+  jsonp = TRUE,
+  split_sig = NULL,
+  self_contained = FALSE,
+  thumb = FALSE
+)
 }
 \arguments{
 \item{x}{an object to create at trelliscope display for}
@@ -37,6 +52,8 @@ trelliscope(x, name, group = "common", panel_col = NULL, desc = "",
 \item{ncol}{the number of columns of panels to display by default}
 
 \item{jsonp}{should json for display object be jsonp (TRUE) or json (FALSE)?}
+
+\item{split_sig}{optional string that specifies the "signature" of the data splitting. If not specified, this is calculated as the md5 hash of the sorted unique facet variables. This is used to identify "related displays" - different displays that are based on the same faceting scheme. This parameter should only be specified manually if a display's faceting is mostly similar to another display's.}
 
 \item{self_contained}{should the Trelliscope display be a self-contained html document? (see note)}
 
@@ -103,7 +120,7 @@ mpg_cog <- mpg \%>\%
   group_by(manufacturer, class) \%>\%
   nest() \%>\%
   mutate(
-    cogs = map_cog(data, ~ data_frame(
+    cogs = map_cog(data, ~ tibble(
       mean_city_mpg = mean(.$cty),
       mean_hwy_mpg = mean(.$hwy),
       most_common_drv = tail(names(table(.$drv)), 1)
@@ -125,7 +142,7 @@ mpg_cog2 <- mpg \%>\%
   group_by(manufacturer, class) \%>\%
   nest() \%>\%
   mutate(
-    cogs = map_cog(data, ~ data_frame(
+    cogs = map_cog(data, ~ tibble(
       mean_city_mpg = cog(mean(.$cty), desc = "Mean city mpg"),
       mean_hwy_mpg = cog(mean(.$hwy), desc = "Mean highway mpg"),
       most_common_drv = cog(tail(names(table(.$drv)), 1), desc = "Most common drive type")

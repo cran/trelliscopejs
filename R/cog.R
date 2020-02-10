@@ -28,7 +28,7 @@
 #'   group_by(manufacturer, class) %>%
 #'   nest() %>%
 #'   mutate(
-#'     cogs = map_cog(data, ~ data_frame(
+#'     cogs = map_cog(data, ~ tibble(
 #'       mean_city_mpg = cog(mean(.$cty), desc = "Mean city mpg"),
 #'       mean_hwy_mpg = cog(mean(.$hwy), desc = "Mean highway mpg"),
 #'       most_common_drv = cog(tail(names(table(.$drv)), 1), desc = "Most common drive type")
@@ -126,6 +126,31 @@ infer_cog_type <- function(val) {
     type <- NA
   }
   type
+}
+
+#' Helper function for creating a cognostic for a link to another display in a filtered state
+#' @param display A string indicating the name of the display to link to.
+#' @param var A string indicating the variable name to filter on.
+#' @param val A string indicating the value of the filter.
+#' @param desc a description for this cognostic value
+#' @param group optional categorization of the cognostic for organizational purposes in the viewer (currently not implemented in the viewer)
+#' @param default_label should this cognostic be used as a panel label in the viewer by default?
+#' @param default_active should this cognostic be active (available for sort / filter / sample) by default?
+#' @param filterable should this cognostic be filterable?  Default is \code{TRUE}.  It can be useful to set this to \code{FALSE} if the cognostic is categorical with many unique values and is only desired to be used as a panel label.
+#' @param sortable should this cognostic be sortable?
+#' @export
+cog_disp_filter <- function(display, var, val,
+  desc = "link", group = "common",
+  default_label = FALSE, default_active = FALSE,
+  filterable = FALSE, sortable = FALSE) {
+  x <- paste0("#display=", display, "&filter=var:",
+    var, ";type:select;val:", val)
+
+  cog(x, type = "href", desc = desc, group = group, 
+    default_label = default_label,
+    default_active = default_active,
+    filterable = filterable, sortable = sortable,
+    log = FALSE)
 }
 
 #' Href Cognostic
@@ -273,7 +298,6 @@ bind_cog_list_and_descs <- function(cog_list) {
     cog_desc = cog_desc
   )
 }
-
 
 #' @importFrom autocogs panel_cogs
 cog_df_info <- function(x, panel_col, state, auto_cog = FALSE, nested_data_list = NULL,

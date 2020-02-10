@@ -58,7 +58,19 @@ set_labels <- function(dat, label_list) {
   dat
 }
 
-resolve_app_params <- function(path, self_contained, jsonp, name, group,
+is_in_knitr <- function() {
+  getOption("knitr.in.progress", FALSE)
+}
+
+is_in_shiny <- function() {
+  res <- FALSE
+  tmp <- try(utils::getFromNamespace(".globals", "shiny")$running, silent = TRUE)
+  if (!inherits(tmp, "try-error"))
+    res <- tmp
+  res
+}
+
+resolve_app_params <- function(path, self_contained, jsonp, split_sig, name, group,
   state, nrow = 1, ncol = 1, thumb = TRUE, split_layout = FALSE) {
 
   spa <- TRUE # "single-page application"
@@ -81,9 +93,10 @@ resolve_app_params <- function(path, self_contained, jsonp, name, group,
     in_notebook <- TRUE
   }
 
-  in_knitr <- getOption("knitr.in.progress", FALSE)
+  in_knitr <- is_in_knitr()
+  in_shiny <- is_in_shiny()
 
-  if (in_knitr)
+  if (in_knitr || in_shiny)
     spa <- FALSE # results are inline with others
 
   if (shiny_running())
@@ -92,7 +105,7 @@ resolve_app_params <- function(path, self_contained, jsonp, name, group,
   orig_path <- path
 
   if (is.null(path)) {
-    if (in_knitr) {
+    if (in_knitr || in_shiny) {
       www_dir <- getwd()
     } else {
       www_dir <- tempfile("trelliscope")
@@ -107,10 +120,16 @@ resolve_app_params <- function(path, self_contained, jsonp, name, group,
 
   # if outside knitr, config.jsonp will always be available to index.html inside appfiles
   config_path <- paste0("appfiles/config.json", ifelse(jsonp, "p", ""))
-  if (in_knitr && !self_contained) {
+  if (in_knitr || in_shiny && !self_contained) {
     if (!grepl("^[A-Za-z0-9_]", orig_path))
-      stop_nice("Path for trelliscope output while inside knitr must be relative.")
-    config_path <- paste(orig_path, config_path, sep = "/")
+      stop_nice("Path for trelliscope output while inside knitr or Shiny must be relative.")
+    if (in_shiny) {
+      if (!grepl("^www/", orig_path))
+        stop_nice("Path for trelliscope output while inside Shiny must go inside www/...")
+      config_path <- paste(gsub("^www/", "", orig_path), config_path, sep = "/")
+    } else {
+      config_path <- paste(orig_path, config_path, sep = "/")
+    }
   }
 
   if (self_contained) {
@@ -141,6 +160,11 @@ resolve_app_params <- function(path, self_contained, jsonp, name, group,
     arrange = "row"
   )
 
+  # TODO: check sort state
+
+  # TODO: check filter state
+
+
   # make sure split_layout is a boolean
   split_layout <- isTRUE(split_layout)
 
@@ -149,6 +173,7 @@ resolve_app_params <- function(path, self_contained, jsonp, name, group,
     www_dir = www_dir,
     config_path = config_path,
     jsonp = jsonp,
+    split_sig = split_sig,
     self_contained = self_contained,
     name = sanitize(name),
     group = sanitize(group),
@@ -156,6 +181,7 @@ resolve_app_params <- function(path, self_contained, jsonp, name, group,
     spa = spa,
     state = state,
     in_knitr = in_knitr,
+    in_shiny = in_shiny,
     in_notebook = in_notebook,
     thumb = thumb,
     split_layout = split_layout
@@ -273,7 +299,7 @@ get_cog_distributions <- function(cogdf, cat_cutoff = 5000) {
         )
       )
       res$log_default <- FALSE
-      if (!is.nan(skw) && skw > 1.5 && all(x >= 0, na.rm = TRUE) && length(x[x > 0]) > 1) {
+      if (!is.na(skw) && skw > 1.5 && all(x >= 0, na.rm = TRUE) && length(x[x > 0]) > 1) {
         # log <- TRUE
         x <- x[x > 0]
         x2 <- log10(x)
