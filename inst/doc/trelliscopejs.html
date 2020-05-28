@@ -325,13 +325,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb3-3" data-line-number="3"><span class="kw">library</span>(gapminder)</a>
 <a class="sourceLine" id="cb3-4" data-line-number="4"></a>
 <a class="sourceLine" id="cb3-5" data-line-number="5"><span class="kw">str</span>(gapminder)</a></code></pre></div>
-<pre><code>Classes 'tbl_df', 'tbl' and 'data.frame':   1704 obs. of  6 variables:
+<pre><code>tibble [1,704 × 6] (S3: tbl_df/tbl/data.frame)
  $ country  : Factor w/ 142 levels &quot;Afghanistan&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
  $ continent: Factor w/ 5 levels &quot;Africa&quot;,&quot;Americas&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
- $ year     : int  1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
- $ lifeExp  : num  28.8 30.3 32 34 36.1 ...
- $ pop      : int  8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
- $ gdpPercap: num  779 821 853 836 740 ...</code></pre>
+ $ year     : int [1:1704] 1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
+ $ lifeExp  : num [1:1704] 28.8 30.3 32 34 36.1 ...
+ $ pop      : int [1:1704] 8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
+ $ gdpPercap: num [1:1704] 779 821 853 836 740 ...</code></pre>
 <p>We might be interested looking at life expectancy vs. year for each country in Europe:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">qplot</span>(year, lifeExp, <span class="dt">data =</span> <span class="kw">subset</span>(gapminder, continent <span class="op">==</span><span class="st"> &quot;Europe&quot;</span>)) <span class="op">+</span></a>
 <a class="sourceLine" id="cb5-2" data-line-number="2"><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>country <span class="op">+</span><span class="st"> </span>continent) <span class="op">+</span></a>
@@ -365,7 +365,7 @@ qplot(class, cty, data = mpg, geom = c("boxplot", "jitter")) +
   ylim(7, 37) + theme_bw()
 ```
 
-<img src="/private/var/folders/wf/xv5yf5kj6pn458pcbx_vgsyr0000gn/T/Rtmpmzozvc/Rbuilda4022d1bea80/trelliscopejs/vignettes/trelliscopejs_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
+<img src="/private/var/folders/wf/xv5yf5kj6pn458pcbx_vgsyr0000gn/T/RtmpKFvh73/Rbuild6101140be569/trelliscopejs/vignettes/trelliscopejs_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 Here, the side-by-side boxplots are essentially a trellis display in that we are looking at the same plot for each class. It might be more interesting if the boxplots were sorted by city mpg mean. While this can be done programmatically with ggplot2, we can create essentially the same plot with Trelliscope with no extra effort and interactively change how the panels are sorted as we wish.
 
@@ -389,19 +389,16 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <div id="gapminder-example" class="section level3">
 <h3>Gapminder example</h3>
 <p>Let’s set up a scenario in which we will produce a plot similar to the Gapminder plot we created using <code>facet_trelliscope()</code>, but using nested data frames and list-columns.</p>
-<p>We want to plot life expectancy vs. year by country. So first we will group our data frame by country and continent and thenc call <code>tidyr::nest()</code> to obtain a data frame with one row per country and continent with each unique country’s data stored in a new column of nested data frames, <code>data</code>:</p>
+<p>We want to plot life expectancy vs. year by country. So first we will nest our data frame by country and continent using <code>tidyr::nest()</code> to obtain a data frame with one row per country and continent with each unique country’s data stored in a new column of nested data frames, <code>data</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">library</span>(dplyr)</a>
 <a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw">library</span>(tidyr)</a>
 <a class="sourceLine" id="cb8-3" data-line-number="3"><span class="kw">library</span>(purrr)</a>
 <a class="sourceLine" id="cb8-4" data-line-number="4"><span class="kw">library</span>(gapminder)</a>
 <a class="sourceLine" id="cb8-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">by_country &lt;-<span class="st"> </span>gapminder <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-7" data-line-number="7"><span class="st">  </span><span class="kw">group_by</span>(country, continent) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-8" data-line-number="8"><span class="st">  </span><span class="kw">nest</span>()</a>
-<a class="sourceLine" id="cb8-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb8-10" data-line-number="10">by_country</a></code></pre></div>
+<a class="sourceLine" id="cb8-6" data-line-number="6">by_country &lt;-<span class="st"> </span><span class="kw">nest</span>(gapminder, <span class="dt">data =</span> <span class="op">!</span><span class="kw">one_of</span>(<span class="kw">c</span>(<span class="st">&quot;country&quot;</span>, <span class="st">&quot;continent&quot;</span>)))</a>
+<a class="sourceLine" id="cb8-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb8-8" data-line-number="8">by_country</a></code></pre></div>
 <pre><code># A tibble: 142 x 3
-# Groups:   country, continent [710]
    country     continent data             
    &lt;fct&gt;       &lt;fct&gt;     &lt;list&gt;           
  1 Afghanistan Asia      &lt;tibble [12 × 4]&gt;
@@ -425,7 +422,6 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <a class="sourceLine" id="cb10-6" data-line-number="6"></a>
 <a class="sourceLine" id="cb10-7" data-line-number="7">by_country</a></code></pre></div>
 <pre><code># A tibble: 142 x 4
-# Groups:   country, continent [710]
    country     continent data              model 
    &lt;fct&gt;       &lt;fct&gt;     &lt;list&gt;            &lt;list&gt;
  1 Afghanistan Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;  
@@ -452,39 +448,54 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <li><code>by_row_plot()</code></li>
 </ul>
 <p>These are all basically wrappers around the corresponding purrr functions (<code>purrr::map()</code>, <code>purrr::map2()</code>, etc.) that indicate that an output is a list of plots. These functions can be used to operate over columns of a data frame to apply a user-defined plotting function to each group. Your plot function can return a wide variety of plot objects, including ggplot2, lattice, and htmlwidgets.</p>
-<p>Let’s look at an example. With our nested Gapminder data, let’s use <code>map2_plot()</code> to add a plot column to our data set which plots both the raw data and the fitted line. <code>map2_plot()</code> allows us to specify two columns (we’ll want to use the columns <code>data</code> and <code>model</code>) as input to our plot function, whereas we can only specify one column with <code>map_plot()</code>. In this example we use the <a href="http://hafen.github.io/rbokeh/">rbokeh</a> package, which is an htmlwidget, to create the plots.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="kw">library</span>(rbokeh)</a>
-<a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw">library</span>(trelliscopejs)</a>
-<a class="sourceLine" id="cb12-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb12-4" data-line-number="4">country_plot &lt;-<span class="st"> </span><span class="cf">function</span>(data, model) {</a>
-<a class="sourceLine" id="cb12-5" data-line-number="5">  <span class="kw">figure</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">1948</span>, <span class="dv">2011</span>), <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">95</span>), <span class="dt">tools =</span> <span class="ot">NULL</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-6" data-line-number="6"><span class="st">    </span><span class="kw">ly_points</span>(year, lifeExp, <span class="dt">data =</span> data, <span class="dt">hover =</span> data) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-7" data-line-number="7"><span class="st">    </span><span class="kw">ly_abline</span>(model)</a>
-<a class="sourceLine" id="cb12-8" data-line-number="8">}</a>
-<a class="sourceLine" id="cb12-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb12-10" data-line-number="10">by_country &lt;-<span class="st"> </span>by_country <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-11" data-line-number="11"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">data_plot =</span> <span class="kw">map2_plot</span>(data, model, country_plot))</a>
-<a class="sourceLine" id="cb12-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb12-13" data-line-number="13">by_country</a></code></pre></div>
+<p>Let’s look at an example. With our nested Gapminder data, let’s use <code>map2_plot()</code> to add a plot column to our data set which plots both the raw data and the fitted line. <code>map2_plot()</code> allows us to specify two columns (we’ll want to use the columns <code>data</code> and <code>model</code>) as input to our plot function, whereas we can only specify one column with <code>map_plot()</code>. In this example we use the <a href="https://plotly-r.com">plotly</a> package, which is an htmlwidget, to create the plots.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="kw">library</span>(plotly)</a></code></pre></div>
+<pre><code>
+Attaching package: 'plotly'</code></pre>
+<pre><code>The following object is masked from 'package:ggplot2':
+
+    last_plot</code></pre>
+<pre><code>The following object is masked from 'package:stats':
+
+    filter</code></pre>
+<pre><code>The following object is masked from 'package:graphics':
+
+    layout</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="kw">library</span>(trelliscopejs)</a>
+<a class="sourceLine" id="cb17-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb17-3" data-line-number="3">country_plot &lt;-<span class="st"> </span><span class="cf">function</span>(data, model) {</a>
+<a class="sourceLine" id="cb17-4" data-line-number="4">  <span class="kw">plot_ly</span>(<span class="dt">data =</span> data, <span class="dt">x =</span> <span class="op">~</span>year, <span class="dt">y =</span> <span class="op">~</span>lifeExp,</a>
+<a class="sourceLine" id="cb17-5" data-line-number="5">    <span class="dt">type =</span> <span class="st">&quot;scatter&quot;</span>, <span class="dt">mode =</span> <span class="st">&quot;markers&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;data&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb17-6" data-line-number="6"><span class="st">    </span><span class="kw">add_trace</span>(<span class="dt">data =</span> data, <span class="dt">x =</span> <span class="op">~</span>year, <span class="dt">y =</span> <span class="op">~</span><span class="kw">predict</span>(model),</a>
+<a class="sourceLine" id="cb17-7" data-line-number="7">      <span class="dt">mode =</span> <span class="st">&quot;lines&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;lm&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb17-8" data-line-number="8"><span class="st">    </span><span class="kw">layout</span>(</a>
+<a class="sourceLine" id="cb17-9" data-line-number="9">      <span class="dt">xaxis =</span> <span class="kw">list</span>(<span class="dt">range =</span> <span class="kw">c</span>(<span class="dv">1948</span>, <span class="dv">2011</span>)),</a>
+<a class="sourceLine" id="cb17-10" data-line-number="10">      <span class="dt">yaxis =</span> <span class="kw">list</span>(<span class="dt">range =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">95</span>)),</a>
+<a class="sourceLine" id="cb17-11" data-line-number="11">      <span class="dt">showlegend =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb17-12" data-line-number="12">}</a>
+<a class="sourceLine" id="cb17-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb17-14" data-line-number="14">by_country &lt;-<span class="st"> </span>by_country <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb17-15" data-line-number="15"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">data_plot =</span> <span class="kw">map2_plot</span>(data, model, country_plot))</a>
+<a class="sourceLine" id="cb17-16" data-line-number="16"></a>
+<a class="sourceLine" id="cb17-17" data-line-number="17">by_country</a></code></pre></div>
 <pre><code># A tibble: 142 x 5
-# Groups:   country, continent [710]
    country     continent data              model  data_plot 
    &lt;fct&gt;       &lt;fct&gt;     &lt;list&gt;            &lt;list&gt; &lt;trllscp_&gt;
- 1 Afghanistan Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 2 Albania     Europe    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 3 Algeria     Africa    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 4 Angola      Africa    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 5 Argentina   Americas  &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 6 Australia   Oceania   &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 7 Austria     Europe    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 8 Bahrain     Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
- 9 Bangladesh  Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
-10 Belgium     Europe    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;rbokeh&gt;  
+ 1 Afghanistan Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 2 Albania     Europe    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 3 Algeria     Africa    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 4 Angola      Africa    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 5 Argentina   Americas  &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 6 Australia   Oceania   &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 7 Austria     Europe    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 8 Bahrain     Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+ 9 Bangladesh  Asia      &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
+10 Belgium     Europe    &lt;tibble [12 × 4]&gt; &lt;lm&gt;   &lt;plotly&gt;  
 # … with 132 more rows</code></pre>
 <p>The <code>by_country</code> data frame now has a new column, <code>data_plot</code> that contains the plot object for each group. In addition to storing nested data in our data frame, we are storing plots!</p>
 <p>We can now pipe this into a call to <code>trelliscope()</code>:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">by_country <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;life_expectancy&quot;</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1">by_country <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb19-2" data-line-number="2"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;life_expectancy&quot;</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
 <p>The output will look like this:</p>
 <div style="text-align: center;">
 <iframe width="850" height="600" src="https://hafen.github.io/trelliscopejs-demo/gap1/" frameborder="0" allowfullscreen>
@@ -501,10 +512,10 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <p><strong>trelliscopejs</strong> tries to make the specification of cognostics as easy as possible. As you have noticed in tidy example above, any available atomic variables in a data frame are automatically turned into cognostics. Also, note that since the original data is preserved in the nested <code>data</code> column, <code>trelliscope()</code> detects this and computes automatic cognostics for the variables in that column. Currently these automatic summaries are simply means if the variable is numeric, and the value of any categorical variable that is fixed within each group. The same is done for <code>facet_trelliscope()</code> as you may have noticed above. We will be adding more automatic cognostics in the future, particularly geared toward extracting cognostics based on the context of what is being plotted (see “upcoming work” below).</p>
 <p>The <strong>trelliscopejs</strong> package has some convenience functions for specifying cognostics that help describe their behavior in the Trelliscope viewer. One of the most useful attributes is a cognostics <em>description</em> that helps the user navigating the displays know more about what the summary statistics that they are looking at mean.</p>
 <p>Let’s add a new cognostic to our gapminder data frame that illustrates the use of <code>cog()</code>. Suppose we wish to be able to organize the panels of the display with respect to a goodness-of-fit measure of our linear model. Let’s add a new column, <code>resid_mad</code> that computes the median absolute deviation of the residuals for each country’s fit.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">by_country &lt;-<span class="st"> </span>by_country <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb15-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">resid_mad =</span> <span class="kw">cog</span>(</a>
-<a class="sourceLine" id="cb15-3" data-line-number="3">    <span class="kw">map_dbl</span>(model, <span class="op">~</span><span class="st"> </span><span class="kw">mad</span>(<span class="kw">resid</span>(.x))),</a>
-<a class="sourceLine" id="cb15-4" data-line-number="4">    <span class="dt">desc =</span> <span class="st">&quot;median absolute deviation of residuals&quot;</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1">by_country &lt;-<span class="st"> </span>by_country <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb20-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">resid_mad =</span> <span class="kw">cog</span>(</a>
+<a class="sourceLine" id="cb20-3" data-line-number="3">    <span class="kw">map_dbl</span>(model, <span class="op">~</span><span class="st"> </span><span class="kw">mad</span>(<span class="kw">resid</span>(.x))),</a>
+<a class="sourceLine" id="cb20-4" data-line-number="4">    <span class="dt">desc =</span> <span class="st">&quot;median absolute deviation of residuals&quot;</span>))</a></code></pre></div>
 <p>The variable <code>resid_mad</code> will now be available in a new Trelliscope display we create with this data, and the description “median absolute deviation of residuals” will be used in the viewer to help users be oriented with what this variable means. Note that we could have left out the <code>cog()</code> function and the variable would still be available in the display, just without the description.</p>
 <p>You can look at the documentation for <code>cog()</code> to see what other options are available.</p>
 </div>
@@ -512,13 +523,13 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <h3>Customizing displays with data frame operations</h3>
 <p>Note that we can use data frame operations such as dplyr’s <code>arrange()</code> and <code>filter()</code> prior to calling <code>trelliscope()</code> to customize Trelliscope displays.</p>
 <p>For example, I might want the default sort order of panels to be by <code>resid_mad</code> from high to low. I can simply order the data frame and pass the result into <code>trelliscope()</code> to achieve this effect:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">by_country <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>resid_mad) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb16-3" data-line-number="3"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;by_country_lm&quot;</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1">by_country <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb21-2" data-line-number="2"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>resid_mad) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb21-3" data-line-number="3"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;by_country_lm&quot;</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
 <p>Or suppose I only want to make a display for the country of Africa. I can use <code>filter()</code> to keep records only for Africa and pass this result to <code>trelliscope()</code>:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1">by_country <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="st">  </span><span class="kw">filter</span>(continent <span class="op">==</span><span class="st"> &quot;Africa&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb17-3" data-line-number="3"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;by_country_africa_lm&quot;</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1">by_country <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb22-2" data-line-number="2"><span class="st">  </span><span class="kw">filter</span>(continent <span class="op">==</span><span class="st"> &quot;Africa&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb22-3" data-line-number="3"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;by_country_africa_lm&quot;</span>, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="working-with-displays" class="section level1">
@@ -536,7 +547,6 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <div id="embedding-sharing" class="section level2">
 <h2>Embedding / sharing</h2>
 <p>While all of the examples so far have created a single application that fills the window of your viewer pane or web browser, you can embed multiple trelliscope displays inside of RMarkdown documents or RMarkdown Notebooks. When using <strong>trelliscopejs</strong> in RMarkdown documents, each display is embedded within the flow of the document (and dimensions can be controlled in the usual way), but an additional “fullscreen” button appears in the bottom right corner allowing toggling between full window mode. In RMarkdown Notebooks, however, you do not get the fullscreen option because Notebooks embed htmlwidgets as iframes rather than as an integrated part of the page.</p>
-<p>Note that if you want to embed a plot in an RMarkdown notebook, you must specify <code>self_contained = TRUE</code> in your call to <code>facet_trelliscope()</code> or <code>trelliscope()</code>. This causes all of the plot dependencies to be embedded in an html page instead of saved as separate files and then loaded as the viewer needs them. This will hopefully change in the future, but <code>self_contained = TRUE</code> should be avoided whenever possible because especially when the number of panels is large, it’s much more efficient to save the panels as separate files and load them on demand rather than embed them all in the page and wait for them to load at the beginning.</p>
 <p><strong>trelliscopejs</strong> displays are also easy to share as standalone apps on the web through Github or a simple web server. For example, some of the examples from this document have been made available through Github (see <a href="http://hafen.github.io/trelliscopejs-demo/housing/">here</a>, <a href="http://hafen.github.io/trelliscopejs-demo/gapminder/">here</a>, and <a href="http://hafen.github.io/trelliscopejs-demo/mpg/">here</a>).</p>
 </div>
 <div id="low-level-functions" class="section level2">
@@ -552,45 +562,47 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <p>While the power of small multiples often lies in making rapid comparisons across many panels, it can also be useful to study individual subsets of data over a large space of subsets. A good example of this is with data available in the <a href="https://github.com/hafen/housingData">“housingData”</a> package.</p>
 <p>This package has a dataset, “housing” that gives the monthly median list and sold price for residential homes by US county, provided by Zillow. Let’s take a look at the median list price over time by county.</p>
 <p>Here, we are going to compute our own custom summary “cognostics”, including the slope of a fitted line, the median list and sold price, the number of non-NA observations, and a special “href” cognostic, which will provide a link to Zillow showing the homes for sale in the county.</p>
-<p>For this one I would recommend using rbokeh over ggplot2 simply because of the time it takes to generate the panels with ggplot2.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw">library</span>(housingData)</a>
-<a class="sourceLine" id="cb18-2" data-line-number="2">housing<span class="op">$</span>state &lt;-<span class="st"> </span><span class="kw">as.character</span>(housing<span class="op">$</span>state)</a>
-<a class="sourceLine" id="cb18-3" data-line-number="3">housing<span class="op">$</span>county &lt;-<span class="st"> </span><span class="kw">as.character</span>(housing<span class="op">$</span>county)</a>
-<a class="sourceLine" id="cb18-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb18-5" data-line-number="5">slope_fn &lt;-<span class="st"> </span><span class="cf">function</span>(x, y)</a>
-<a class="sourceLine" id="cb18-6" data-line-number="6">  <span class="kw">coef</span>(<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x))[<span class="dv">2</span>]</a>
-<a class="sourceLine" id="cb18-7" data-line-number="7"></a>
-<a class="sourceLine" id="cb18-8" data-line-number="8">d &lt;-<span class="st"> </span>housing <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-9" data-line-number="9"><span class="st">  </span><span class="kw">group_by</span>(county, state) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-10" data-line-number="10"><span class="st">  </span><span class="kw">nest</span>()</a>
-<a class="sourceLine" id="cb18-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb18-12" data-line-number="12">d &lt;-<span class="st"> </span>d <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-13" data-line-number="13"><span class="st">  </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb18-14" data-line-number="14">    <span class="dt">cogs =</span> <span class="kw">map</span>(data, <span class="cf">function</span>(x, state, county) {</a>
-<a class="sourceLine" id="cb18-15" data-line-number="15">      <span class="kw">tibble</span>(</a>
-<a class="sourceLine" id="cb18-16" data-line-number="16">        <span class="dt">slope =</span> <span class="kw">slope_fn</span>(x<span class="op">$</span>time, x<span class="op">$</span>medListPriceSqft),</a>
-<a class="sourceLine" id="cb18-17" data-line-number="17">        <span class="dt">mean_list =</span> <span class="kw">mean</span>(x<span class="op">$</span>medListPriceSqft, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
-<a class="sourceLine" id="cb18-18" data-line-number="18">        <span class="dt">mean_sold =</span> <span class="kw">mean</span>(x<span class="op">$</span>medSoldPriceSqft, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
-<a class="sourceLine" id="cb18-19" data-line-number="19">        <span class="dt">n_obs =</span> <span class="kw">length</span>(<span class="kw">which</span>(<span class="op">!</span><span class="kw">is.na</span>(x<span class="op">$</span>medListPriceSqft)))</a>
-<a class="sourceLine" id="cb18-20" data-line-number="20">      )</a>
-<a class="sourceLine" id="cb18-21" data-line-number="21">    }),</a>
-<a class="sourceLine" id="cb18-22" data-line-number="22">    <span class="dt">zillow_link =</span> <span class="kw">sprintf</span>(<span class="st">&quot;http://www.zillow.com/homes/%s_rb/&quot;</span>,</a>
-<a class="sourceLine" id="cb18-23" data-line-number="23">      <span class="kw">gsub</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;-&quot;</span>, <span class="kw">paste</span>(county, state)))</a>
-<a class="sourceLine" id="cb18-24" data-line-number="24">  ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-25" data-line-number="25"><span class="st">  </span><span class="kw">unnest</span>(cogs) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-26" data-line-number="26"><span class="st">  </span><span class="kw">filter</span>(n_obs <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb18-27" data-line-number="27"></a>
-<a class="sourceLine" id="cb18-28" data-line-number="28">d &lt;-<span class="st"> </span>d <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-29" data-line-number="29"><span class="st">  </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb18-30" data-line-number="30">    <span class="dt">panel =</span> <span class="kw">map_plot</span>(data, <span class="cf">function</span>(x) {</a>
-<a class="sourceLine" id="cb18-31" data-line-number="31">      <span class="kw">figure</span>(<span class="dt">xlab =</span> <span class="st">&quot;time&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;median list price / sq ft&quot;</span>, <span class="dt">toolbar =</span> <span class="ot">NULL</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-32" data-line-number="32"><span class="st">        </span><span class="kw">ly_points</span>(time, medListPriceSqft, <span class="dt">data =</span> x, <span class="dt">hover =</span> x)</a>
-<a class="sourceLine" id="cb18-33" data-line-number="33">    })</a>
-<a class="sourceLine" id="cb18-34" data-line-number="34">  )</a>
-<a class="sourceLine" id="cb18-35" data-line-number="35"></a>
-<a class="sourceLine" id="cb18-36" data-line-number="36">d <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-37" data-line-number="37"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;list_vs_time&quot;</span>,</a>
-<a class="sourceLine" id="cb18-38" data-line-number="38">    <span class="dt">desc =</span> <span class="st">&quot;monthly median list price vs. time for 2984 US counties from 2008–2016&quot;</span>)</a></code></pre></div>
+<p>For this one I would recommend using <a href="http://hafen.github.io/rbokeh/">rbokeh</a> or plotly over ggplot2 simply because of the time it takes to generate the panels with ggplot2.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" data-line-number="1"><span class="kw">library</span>(housingData)</a>
+<a class="sourceLine" id="cb23-2" data-line-number="2">housing<span class="op">$</span>state &lt;-<span class="st"> </span><span class="kw">as.character</span>(housing<span class="op">$</span>state)</a>
+<a class="sourceLine" id="cb23-3" data-line-number="3">housing<span class="op">$</span>county &lt;-<span class="st"> </span><span class="kw">as.character</span>(housing<span class="op">$</span>county)</a>
+<a class="sourceLine" id="cb23-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb23-5" data-line-number="5">slope_fn &lt;-<span class="st"> </span><span class="cf">function</span>(x, y)</a>
+<a class="sourceLine" id="cb23-6" data-line-number="6">  <span class="kw">coef</span>(<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x))[<span class="dv">2</span>]</a>
+<a class="sourceLine" id="cb23-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb23-8" data-line-number="8">d &lt;-<span class="st"> </span><span class="kw">nest</span>(housing, <span class="dt">data =</span> <span class="op">!</span><span class="kw">one_of</span>(<span class="kw">c</span>(<span class="st">&quot;county&quot;</span>, <span class="st">&quot;state&quot;</span>))</a>
+<a class="sourceLine" id="cb23-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb23-10" data-line-number="10">d &lt;-<span class="st"> </span>d <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb23-11" data-line-number="11"><span class="st">  </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb23-12" data-line-number="12">    <span class="dt">cogs =</span> <span class="kw">map</span>(data, <span class="cf">function</span>(x, state, county) {</a>
+<a class="sourceLine" id="cb23-13" data-line-number="13">      <span class="kw">tibble</span>(</a>
+<a class="sourceLine" id="cb23-14" data-line-number="14">        <span class="dt">slope =</span> <span class="kw">slope_fn</span>(x<span class="op">$</span>time, x<span class="op">$</span>medListPriceSqft),</a>
+<a class="sourceLine" id="cb23-15" data-line-number="15">        <span class="dt">mean_list =</span> <span class="kw">mean</span>(x<span class="op">$</span>medListPriceSqft, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
+<a class="sourceLine" id="cb23-16" data-line-number="16">        <span class="dt">mean_sold =</span> <span class="kw">mean</span>(x<span class="op">$</span>medSoldPriceSqft, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
+<a class="sourceLine" id="cb23-17" data-line-number="17">        <span class="dt">n_obs =</span> <span class="kw">length</span>(<span class="kw">which</span>(<span class="op">!</span><span class="kw">is.na</span>(x<span class="op">$</span>medListPriceSqft)))</a>
+<a class="sourceLine" id="cb23-18" data-line-number="18">      )</a>
+<a class="sourceLine" id="cb23-19" data-line-number="19">    }),</a>
+<a class="sourceLine" id="cb23-20" data-line-number="20">    <span class="dt">zillow_link =</span> <span class="kw">sprintf</span>(<span class="st">&quot;http://www.zillow.com/homes/%s_rb/&quot;</span>,</a>
+<a class="sourceLine" id="cb23-21" data-line-number="21">      <span class="kw">gsub</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;-&quot;</span>, <span class="kw">paste</span>(county, state)))</a>
+<a class="sourceLine" id="cb23-22" data-line-number="22">  ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb23-23" data-line-number="23"><span class="st">  </span><span class="kw">unnest</span>(cogs) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb23-24" data-line-number="24"><span class="st">  </span><span class="kw">filter</span>(n_obs <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb23-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb23-26" data-line-number="26">d &lt;-<span class="st"> </span>d <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb23-27" data-line-number="27"><span class="st">  </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb23-28" data-line-number="28">    <span class="dt">panel =</span> <span class="kw">map_plot</span>(data, <span class="cf">function</span>(x) {</a>
+<a class="sourceLine" id="cb23-29" data-line-number="29">      <span class="kw">plot_ly</span>(<span class="dt">data =</span> x, <span class="dt">x =</span> <span class="op">~</span>time, <span class="dt">y =</span> <span class="op">~</span>medListPriceSqft,</a>
+<a class="sourceLine" id="cb23-30" data-line-number="30">        <span class="dt">type =</span> <span class="st">&quot;scatter&quot;</span>, <span class="dt">mode =</span> <span class="st">&quot;markers&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb23-31" data-line-number="31"><span class="st">        </span><span class="kw">layout</span>(</a>
+<a class="sourceLine" id="cb23-32" data-line-number="32">          <span class="dt">xaxis =</span> <span class="kw">list</span>(<span class="dt">title =</span> <span class="st">&quot;time&quot;</span>),</a>
+<a class="sourceLine" id="cb23-33" data-line-number="33">          <span class="dt">yaxis =</span> <span class="kw">list</span>(<span class="dt">title =</span> <span class="st">&quot;median list price / sq ft&quot;</span>))</a>
+<a class="sourceLine" id="cb23-34" data-line-number="34">    })</a>
+<a class="sourceLine" id="cb23-35" data-line-number="35">  )</a>
+<a class="sourceLine" id="cb23-36" data-line-number="36"></a>
+<a class="sourceLine" id="cb23-37" data-line-number="37">d <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb23-38" data-line-number="38"><span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name =</span> <span class="st">&quot;list_vs_time&quot;</span>,</a>
+<a class="sourceLine" id="cb23-39" data-line-number="39">    <span class="dt">desc =</span> <span class="st">&quot;monthly median list price vs. time for 2984 US counties from 2008–2016&quot;</span>,</a>
+<a class="sourceLine" id="cb23-40" data-line-number="40">    <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">4</span>)</a></code></pre></div>
 <p>Here is the resulting display:</p>
 <div style="text-align: center;">
 <iframe width="850" height="600" src="https://hafen.github.io/trelliscopejs-demo/housing/" frameborder="0" allowfullscreen>
@@ -614,18 +626,18 @@ This example brings up a few more options for `facet_trelliscope()`. First, you 
 <p>It is easy to embed the library and corresponding Trelliscope displays into another web page or web application.</p>
 <p>NOTE: this is not required knowledge for anyone who is simply creating displays with the R package, but is provided as a reference for others who may want to take displays that have been deployed and embed the viewer in their own web applications.</p>
 <p>First, you need to load the trelliscopejs-lib library with this script tag (check for the latest version):</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw">&lt;script</span><span class="ot"> src=</span><span class="st">&quot;https://unpkg.com/trelliscopejs-lib/dist/trelliscope.min.js&quot;</span><span class="kw">&gt;&lt;/script&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb24-1" data-line-number="1"><span class="kw">&lt;script</span><span class="ot"> src=</span><span class="st">&quot;https://unpkg.com/trelliscopejs-lib/dist/trelliscope.min.js&quot;</span><span class="kw">&gt;&lt;/script&gt;</span></a></code></pre></div>
 <p>This attaches a function to the window called <code>trellscopeApp()</code> that is used to instantiate an app in a div.</p>
 <p>Then, you create a div where you would like to embed the app. The div needs to have an ID that matches the ID provided for a given display. For example, the housing example above is shared in a github repository and in the <code>appfiles</code> subdirectory of the app, there is a text file <code>id</code>: <a href="https://github.com/hafen/trelliscopejs-demo/blob/gh-pages/housing/appfiles/id" class="uri">https://github.com/hafen/trelliscopejs-demo/blob/gh-pages/housing/appfiles/id</a>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;8a43f2dd&quot;</span><span class="ot"> class=</span><span class="st">&quot;trelliscope-not-spa&quot;</span><span class="ot"> style=</span><span class="st">&quot;width:800px; height:500px;&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb25-1" data-line-number="1"><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;8a43f2dd&quot;</span><span class="ot"> class=</span><span class="st">&quot;trelliscope-not-spa&quot;</span><span class="ot"> style=</span><span class="st">&quot;width:800px; height:500px;&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></a></code></pre></div>
 <p>We give this div a class “trelliscope-not-spa” to help the application know that we are embedding the display and therefore it is not a “single-page-application”. You can embed it as a full-page application if you would like and would omit the “class” and “style”.</p>
 <p>Finally, at the end of your html file (or wherever it is in your app that you want to make the app appear), you need to point <code>trelliscopeApp()</code> to the id of the div it should populate and your app’s config.jsonp that tells the viewer where all the components are. In the case of this example, we can point directly to the housing app files as they are hosted on github pages:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="kw">&lt;script&gt;</span></a>
-<a class="sourceLine" id="cb21-2" data-line-number="2">  (<span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb21-3" data-line-number="3">    <span class="at">trelliscopeApp</span>(<span class="st">'8a43f2dd'</span><span class="op">,</span></a>
-<a class="sourceLine" id="cb21-4" data-line-number="4">      <span class="st">'http://hafen.github.io/trelliscopejs-demo/housing/appfiles/config.jsonp'</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb21-5" data-line-number="5">  <span class="op">}</span>)()<span class="op">;</span></a>
-<a class="sourceLine" id="cb21-6" data-line-number="6"><span class="kw">&lt;/script&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb26-1" data-line-number="1"><span class="kw">&lt;script&gt;</span></a>
+<a class="sourceLine" id="cb26-2" data-line-number="2">  (<span class="kw">function</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb26-3" data-line-number="3">    <span class="at">trelliscopeApp</span>(<span class="st">'8a43f2dd'</span><span class="op">,</span></a>
+<a class="sourceLine" id="cb26-4" data-line-number="4">      <span class="st">'http://hafen.github.io/trelliscopejs-demo/housing/appfiles/config.jsonp'</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb26-5" data-line-number="5">  <span class="op">}</span>)()<span class="op">;</span></a>
+<a class="sourceLine" id="cb26-6" data-line-number="6"><span class="kw">&lt;/script&gt;</span></a></code></pre></div>
 <p>In the future I envision <code>trelliscopeApp()</code> passing back “get” and “set” methods so that other applications can drive the behavior of a <strong>trelliscopejs</strong> app.</p>
 </div>
 </div>

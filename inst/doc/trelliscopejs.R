@@ -2,11 +2,6 @@
 # R output pre blocks are styled by default to indicate output
 knitr::opts_chunk$set(comment = NA)
 
-library(rbokeh)
-thm <- getOption("bokeh_theme")
-thm$axis$axis_label_text_font_size <- "10pt"
-options(bokeh_theme = thm)
-
 ## ---- message=FALSE-----------------------------------------------------------
 library(trelliscopejs)
 library(ggplot2)
@@ -34,9 +29,7 @@ library(tidyr)
 library(purrr)
 library(gapminder)
 
-by_country <- gapminder %>%
-  group_by(country, continent) %>%
-  nest()
+by_country <- nest(gapminder, data = !one_of(c("country", "continent")))
 
 by_country
 
@@ -50,13 +43,18 @@ by_country <- by_country %>%
 by_country
 
 ## ----warning=FALSE------------------------------------------------------------
-library(rbokeh)
+library(plotly)
 library(trelliscopejs)
 
 country_plot <- function(data, model) {
-  figure(xlim = c(1948, 2011), ylim = c(10, 95), tools = NULL) %>%
-    ly_points(year, lifeExp, data = data, hover = data) %>%
-    ly_abline(model)
+  plot_ly(data = data, x = ~year, y = ~lifeExp,
+    type = "scatter", mode = "markers", name = "data") %>%
+    add_trace(data = data, x = ~year, y = ~predict(model),
+      mode = "lines", name = "lm") %>%
+    layout(
+      xaxis = list(range = c(1948, 2011)),
+      yaxis = list(range = c(10, 95)),
+      showlegend = FALSE)
 }
 
 by_country <- by_country %>%
