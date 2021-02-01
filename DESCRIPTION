@@ -1,6 +1,6 @@
 Package: trelliscopejs
 Title: Create Interactive Trelliscope Displays
-Version: 0.2.5
+Version: 0.2.6
 Authors@R: c(
     person(given = "Ryan",
            family = "Hafen",
@@ -20,15 +20,16 @@ Imports: dplyr, purrr, grid, htmltools, DistributionUtils, grDevices,
         gtable, digest, jsonlite, ggplot2 (>= 3.2.1), base64enc,
         htmlwidgets, graphics, progress, utils, knitr, webshot,
         autocogs, tidyr, rlang
-Suggests: plotly, testthat, covr, gapminder, housingData
-RoxygenNote: 7.1.0
+Suggests: plotly, testthat, covr, gapminder, rmarkdown, shiny,
+        housingData
+RoxygenNote: 7.1.1
 URL: https://github.com/hafen/trelliscopejs
 BugReports: https://github.com/hafen/trelliscopejs/issues
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2020-05-28 02:31:50 UTC; hafen
+Packaged: 2021-02-01 07:40:10 UTC; hafen
 Author: Ryan Hafen [aut, cre] (<https://orcid.org/0000-0002-5516-8367>),
   Barret Schloerke [aut]
 Maintainer: Ryan Hafen <rhafen@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-05-28 11:20:03 UTC
+Date/Publication: 2021-02-01 08:00:02 UTC
